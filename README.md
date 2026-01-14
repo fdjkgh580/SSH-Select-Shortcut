@@ -1,3 +1,5 @@
+[English](README.en.md) | **正體中文**
+
 # SSH-Select-Shortcut (sss)
 
 快速選擇 SSH 連線的互動式工具，讀取 `~/.ssh/config` 並以表格顯示所有主機。
