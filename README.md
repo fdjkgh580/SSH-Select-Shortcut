@@ -2,7 +2,12 @@
 
 快速選擇 SSH 連線的互動式工具，讀取 `~/.ssh/config` 並以表格顯示所有主機。
 
-![demo](https://github.com/fdjkgh580/SSH-Select-Shortcut/raw/main/demo.png)
+顯示列表
+<img width="1095" height="291" alt="image" src="https://github.com/user-attachments/assets/bac5d702-7efe-41a8-98af-73839a44e02d" />
+
+關鍵搜尋
+<img width="1093" height="297" alt="image" src="https://github.com/user-attachments/assets/8ed77646-5997-41fc-961d-dcc5e88d00e9" />
+
 
 ## 功能
 
