@@ -1,2 +1,60 @@
-# SSH-Select-Shortcut
-快速選擇 SSH 連線
+# SSH-Select-Shortcut (sss)
+
+快速選擇 SSH 連線的互動式工具，讀取 `~/.ssh/config` 並以表格顯示所有主機。
+
+![demo](https://github.com/fdjkgh580/SSH-Select-Shortcut/raw/main/demo.png)
+
+## 功能
+
+- 讀取 `~/.ssh/config`（支援 `Include` 指令）
+- 表格顯示 Host、User、HostName
+- 支援中文主機名稱
+- 上下鍵選擇、即時搜尋過濾
+- **記憶功能**：自動帶入上次搜尋關鍵字，方便連續連線多台主機
+
+## 按鍵操作
+
+| 按鍵 | 功能 |
+|------|------|
+| ↑↓ | 選擇主機 |
+| Enter | 連線 |
+| ESC | 清除記憶並離開 |
+| 輸入文字 | 即時搜尋過濾 |
+
+## 安裝
+
+### 需求
+- macOS
+- [Homebrew](https://brew.sh)（腳本會自動安裝 fzf）
+
+### 步驟
+
+```bash
+# 1. 建立 ~/bin 目錄
+mkdir -p ~/bin
+
+# 2. 下載 sss
+curl -o ~/bin/sss https://raw.githubusercontent.com/fdjkgh580/SSH-Select-Shortcut/main/sss
+
+# 3. 加上執行權限
+chmod +x ~/bin/sss
+
+# 4. 加入 PATH（如果還沒有的話）
+echo 'export PATH="$HOME/bin:$PATH"' >> ~/.zshrc
+source ~/.zshrc
+
+# 5. 執行
+sss
+```
+
+## 使用方式
+
+```bash
+sss
+```
+
+首次執行會自動安裝 [fzf](https://github.com/junegunn/fzf)（需要 Homebrew）。
+
+## License
+
+MIT

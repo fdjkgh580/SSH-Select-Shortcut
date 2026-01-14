@@ -1,0 +1,178 @@
+#!/bin/bash
+# @author Claude Code
+# sss (SSH Select Shortcut) - 快速選擇 SSH 連線
+
+# set -e 移除，因為 fzf 取消時會返回非零
+
+# 檢查 fzf，沒有就自動安裝
+if ! command -v fzf &> /dev/null; then
+    echo "fzf 未安裝，正在安裝..."
+    if command -v brew &> /dev/null; then
+        brew install fzf
+    else
+        echo "錯誤：需要 Homebrew 來安裝 fzf"
+        echo "請先安裝 Homebrew: https://brew.sh"
+        exit 1
+    fi
+fi
+
+# 解析 SSH config 檔案 (支援 Include)
+parse_ssh_config() {
+    local config_file="$1"
+    local current_host=""
+    local current_hostname=""
+    local current_user=""
+
+    # 展開 ~ 路徑
+    config_file="${config_file/#\~/$HOME}"
+
+    if [[ ! -f "$config_file" ]]; then
+        return
+    fi
+
+    while IFS= read -r line || [[ -n "$line" ]]; do
+        # 移除前後空白
+        line="${line#"${line%%[![:space:]]*}"}"
+        line="${line%"${line##*[![:space:]]}"}"
+
+        # 跳過空行和註解
+        [[ -z "$line" || "$line" == \#* ]] && continue
+
+        # 解析 Include
+        if [[ "$line" =~ ^[Ii]nclude[[:space:]]+(.+)$ ]]; then
+            local include_pattern="${BASH_REMATCH[1]}"
+            include_pattern="${include_pattern/#\~/$HOME}"
+            # 展開 glob
+            for inc_file in $include_pattern; do
+                if [[ -f "$inc_file" ]]; then
+                    parse_ssh_config "$inc_file"
+                fi
+            done
+            continue
+        fi
+
+        # 解析 Host
+        if [[ "$line" =~ ^[Hh]ost[[:space:]]+(.+)$ ]]; then
+            # 輸出前一個 host 的資訊
+            if [[ -n "$current_host" && "$current_host" != *"*"* && "$current_host" != *"?"* ]]; then
+                echo "${current_host}|${current_user:-"-"}|${current_hostname:-"-"}"
+            fi
+            current_host="${BASH_REMATCH[1]}"
+            current_hostname=""
+            current_user=""
+            continue
+        fi
+
+        # 解析 HostName
+        if [[ "$line" =~ ^[Hh]ost[Nn]ame[[:space:]]+(.+)$ ]]; then
+            current_hostname="${BASH_REMATCH[1]}"
+            continue
+        fi
+
+        # 解析 User
+        if [[ "$line" =~ ^[Uu]ser[[:space:]]+(.+)$ ]]; then
+            current_user="${BASH_REMATCH[1]}"
+            continue
+        fi
+    done < "$config_file"
+
+    # 輸出最後一個 host
+    if [[ -n "$current_host" && "$current_host" != *"*"* && "$current_host" != *"?"* ]]; then
+        echo "${current_host}|${current_user:-"-"}|${current_hostname:-"-"}"
+    fi
+}
+
+# 取得所有 hosts
+hosts=$(parse_ssh_config ~/.ssh/config)
+
+if [[ -z "$hosts" ]]; then
+    echo "找不到任何 SSH Host"
+    exit 1
+fi
+
+# 計算字串顯示寬度 (中文字算2格)
+display_width() {
+    local str="$1"
+    local char_count=$(printf '%s' "$str" | wc -m)
+    local byte_count=$(printf '%s' "$str" | wc -c)
+    # UTF-8 中文 3 bytes, 顯示寬度 2
+    echo $(( char_count + (byte_count - char_count) / 2 ))
+}
+
+# 計算欄位寬度
+max_host=4
+max_user=4
+max_hostname=8
+
+while IFS='|' read -r host user hostname; do
+    w=$(display_width "$host")
+    [[ $w -gt $max_host ]] && max_host=$w
+    w=$(display_width "$user")
+    [[ $w -gt $max_user ]] && max_user=$w
+    w=$(display_width "$hostname")
+    [[ $w -gt $max_hostname ]] && max_hostname=$w
+done <<< "$hosts"
+
+# 格式化輸出 (處理中文寬度)
+format_line() {
+    local str="$1"
+    local target_width="$2"
+    local current_width=$(display_width "$str")
+    local padding=$((target_width - current_width))
+    printf "%s%*s" "$str" $padding ""
+}
+
+format_row() {
+    local col1="$1"
+    local col2="$2"
+    local col3="$3"
+    format_line "$col1" $max_host
+    printf "  "
+    format_line "$col2" $max_user
+    printf "  "
+    format_line "$col3" $max_hostname
+}
+
+# 建立表格內容
+header=$(format_row "Host" "User" "HostName")
+separator=$(printf '%*s' $((max_host + max_user + max_hostname + 4)) '' | tr ' ' '─')
+
+table=""
+while IFS='|' read -r host user hostname; do
+    table+="$(format_row "$host" "$user" "$hostname")"$'\n'
+done <<< "$hosts"
+
+# 記憶上次搜尋關鍵字
+QUERY_FILE=~/.sss_last_query
+last_query=$(cat "$QUERY_FILE" 2>/dev/null || echo "")
+
+# 使用 fzf 選擇
+result=$(echo -n "$table" | fzf \
+    --header="$header"$'\n'"$separator" \
+    --border-label=" ↑↓ 選擇  Enter 連線  ESC 清除記憶並離開 " \
+    --border-label-pos=bottom \
+    --reverse \
+    --no-sort \
+    --ansi \
+    --height=~80% \
+    --border=rounded \
+    --prompt="SSH > " \
+    --pointer=" " \
+    --query="$last_query" \
+    --print-query \
+    --color='header:italic,bg+:#5f5fd7,fg+:#ffffff,gutter:-1') || true
+
+# 解析結果 (第一行是 query，第二行是選擇)
+query=$(echo "$result" | head -1)
+selected=$(echo "$result" | sed -n '2p')
+
+# 如果有選擇，儲存關鍵字並連線
+if [[ -n "$selected" ]]; then
+    echo "$query" > "$QUERY_FILE"
+    host=$(echo "$selected" | awk '{print $1}')
+    echo "連線到: $host"
+    exec ssh "$host"
+else
+    # 沒有選擇 (ESC/Ctrl+C)，清除記憶
+    rm -f "$QUERY_FILE"
+fi
