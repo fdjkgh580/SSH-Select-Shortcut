@@ -10,7 +10,7 @@
 **關鍵字搜尋** <br>
 <img width="505" height="390" alt="image" src="https://github.com/user-attachments/assets/5e732990-1003-4b25-a8d4-1bd5c78c62bf" />
 
-**你的 `~/.ssh/confi` 應該會長這樣** <br>
+**注意！你的 `~/.ssh/confi` 應該會長這樣** <br>
 <img width="376" height="362" alt="image" src="https://github.com/user-attachments/assets/9a14b7de-6e00-40d7-8576-a15ba633e158" />
 
 
