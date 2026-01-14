@@ -149,7 +149,7 @@ last_query=$(cat "$QUERY_FILE" 2>/dev/null || echo "")
 # 使用 fzf 選擇
 result=$(echo -n "$table" | fzf \
     --header="$header"$'\n'"$separator" \
-    --border-label=" ↑↓ 選擇  Enter 連線  ESC 清除記憶並離開 " \
+    --border-label=" ↑↓ 選擇  Enter 連線  ESC 清除記憶  Ctrl+C 離開 " \
     --border-label-pos=bottom \
     --reverse \
     --no-sort \
@@ -160,6 +160,7 @@ result=$(echo -n "$table" | fzf \
     --pointer=" " \
     --query="$last_query" \
     --print-query \
+    --bind 'esc:clear-query+execute-silent(rm -f ~/.sss_last_query)' \
     --color='header:italic,bg+:#5f5fd7,fg+:#ffffff,gutter:-1') || true
 
 # 解析結果 (第一行是 query，第二行是選擇)
