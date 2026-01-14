@@ -3,10 +3,12 @@
 快速選擇 SSH 連線的互動式工具，讀取 `~/.ssh/config` 並以表格顯示所有主機。
 
 顯示列表
+
 <img width="505" height="390" alt="image" src="https://github.com/user-attachments/assets/78ca8e45-140e-4e21-8e85-304d18dbc62a" />
 
 
 關鍵字搜尋
+
 <img width="505" height="390" alt="image" src="https://github.com/user-attachments/assets/5e732990-1003-4b25-a8d4-1bd5c78c62bf" />
 
 
