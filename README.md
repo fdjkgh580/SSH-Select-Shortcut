@@ -59,6 +59,10 @@ sss
 
 首次執行會自動安裝 [fzf](https://github.com/junegunn/fzf)（需要 Homebrew）。
 
+## 靈感來源
+
+感謝 [ggh](https://github.com/byawitz/ggh) 的啟發。
+
 ## License
 
 MIT
