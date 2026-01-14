@@ -5,7 +5,7 @@
 顯示列表
 <img width="1095" height="291" alt="image" src="https://github.com/user-attachments/assets/bac5d702-7efe-41a8-98af-73839a44e02d" />
 
-關鍵搜尋
+關鍵字搜尋
 <img width="1093" height="297" alt="image" src="https://github.com/user-attachments/assets/8ed77646-5997-41fc-961d-dcc5e88d00e9" />
 
 
